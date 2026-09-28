@@ -3,16 +3,16 @@ package com.mediaconverter.task;
 import com.mediaconverter.engine.ConversionEngine;
 import com.mediaconverter.exception.MediaProcessingException;
 
-public class AudioTask extends MediaTask {
+public class VideoTask extends MediaTask {
 
-  public AudioTask(ConversionEngine engine) {
+  public VideoTask(ConversionEngine engine) {
     super(engine);
   }
 
   @Override
   public void process(String inputFile) throws MediaProcessingException {
-    System.out.println("[AudioTask] Starting audio conversion: " + inputFile);
-    engine.convert(inputFile, "mp3");
-    System.out.println("[AudioTask] Done.");
+    System.out.println("[VideoTask] Starting video conversion: " + inputFile);
+    engine.convert(inputFile, "mp4");
+    System.out.println("[VideoTask] Done.");
   }
 }
