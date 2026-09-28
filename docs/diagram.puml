@@ -1,0 +1,70 @@
+@startuml
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+abstract class MediaTask {
+  # engine : ConversionEngine
+  + MediaTask(engine : ConversionEngine)
+  + process(inputFile : String) : void {abstract}
+}
+
+class AudioTask {
+  + process(inputFile : String) : void
+}
+
+class VideoTask {
+  + process(inputFile : String) : void
+}
+
+
+interface ConversionEngine {
+  + convert(inputFile : String, outputFormat : String) : void
+}
+
+class FfmpegEngine {
+  + convert(inputFile : String, outputFormat : String) : void
+}
+
+class GstreamerEngine {
+  + convert(inputFile : String, outputFormat : String) : void
+}
+
+class LegacyWinamp {
+  + {static} OK : int
+  + {static} ERR_FILE_NOT_FOUND : int
+  + {static} ERR_FORMAT_UNSUPPORTED : int
+  + {static} ERR_UNKNOWN : int
+  + transcodeMedia(outputFormat : String, inputFormat : String, outputFile : String, inputFile : String) : int
+}
+
+class WinampEngineAdapter {
+  - legacyWinamp : LegacyWinamp
+  + WinampEngineAdapter(legacyWinamp : LegacyWinamp)
+  + convert(inputFile : String, outputFormat : String) : void
+}
+
+
+
+class MediaProcessingException {
+  - sourceFile : String
+  - targetFormat : String
+  + getSourceFile() : String
+  + getTargetFormat() : String
+}
+
+MediaTask <|-- AudioTask
+MediaTask <|-- VideoTask
+MediaTask o--> ConversionEngine
+
+ConversionEngine <|.. FfmpegEngine
+ConversionEngine <|.. GstreamerEngine
+ConversionEngine <|.. WinampEngineAdapter
+
+WinampEngineAdapter --> LegacyWinamp
+
+FfmpegEngine ..> MediaProcessingException : throws
+GstreamerEngine ..> MediaProcessingException : throws
+WinampEngineAdapter ..> MediaProcessingException : throws
+
+@enduml
