@@ -17,7 +17,6 @@ class VideoTask {
   + process(inputFile : String) : void
 }
 
-
 interface ConversionEngine {
   + convert(inputFile : String, outputFormat : String) : void
 }
@@ -44,14 +43,27 @@ class WinampEngineAdapter {
   + convert(inputFile : String, outputFormat : String) : void
 }
 
-
-
 class MediaProcessingException {
   - sourceFile : String
   - targetFormat : String
   + getSourceFile() : String
   + getTargetFormat() : String
 }
+
+class App {
+  - ENGINE_MAP : Map<String, ConversionEngine>
+  + main(args : String[]) : void
+  - loadEngineMap() : Map<String, ConversionEngine>
+  - selectEngine(filename : String) : ConversionEngine
+  - selectTask(filename : String, engine : ConversionEngine) : MediaTask
+}
+
+note right of App
+  engine-mapping.properties
+  mp3=ffmpeg
+  avi=gstreamer
+  ...
+end note
 
 MediaTask <|-- AudioTask
 MediaTask <|-- VideoTask
@@ -66,5 +78,11 @@ WinampEngineAdapter --> LegacyWinamp
 FfmpegEngine ..> MediaProcessingException : throws
 GstreamerEngine ..> MediaProcessingException : throws
 WinampEngineAdapter ..> MediaProcessingException : throws
+
+App ..> MediaTask : creates
+App ..> ConversionEngine : selects
+App ..> FfmpegEngine : instantiates
+App ..> GstreamerEngine : instantiates
+App ..> WinampEngineAdapter : instantiates
 
 @enduml

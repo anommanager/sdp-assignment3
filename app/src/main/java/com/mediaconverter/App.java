@@ -10,9 +10,18 @@ import com.mediaconverter.task.AudioTask;
 import com.mediaconverter.task.MediaTask;
 import com.mediaconverter.task.VideoTask;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
 public class App {
+
+  private static final Map<String, ConversionEngine> ENGINE_MAP = loadEngineMap();
+
   public static void main(String[] args) {
-    String files[] = { "voice.mp3", "film.avi", "podcast.wma" };
+    String[] files = { "voice.mp3", "film.avi", "podcast.wma" };
 
     for (String file : files) {
       ConversionEngine engine = selectEngine(file);
@@ -26,14 +35,33 @@ public class App {
     }
   }
 
-  private static ConversionEngine selectEngine(String filename) {
-    String format = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
+  private static Map<String, ConversionEngine> loadEngineMap() {
+    Properties props = new Properties();
+    try (InputStream in = App.class.getClassLoader()
+        .getResourceAsStream("engine-mapping.properties")) {
+      props.load(in);
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to load engine mapping", e);
+    }
 
-    return switch (format) {
-      case "mp3", "wav", "flac" -> new FfmpegEngine();
-      case "mp4", "mkv", "avi" -> new GstreamerEngine();
-      default -> new WinampEngineAdapter(new LegacyWinamp());
-    };
+    ConversionEngine ffmpeg = new FfmpegEngine();
+    ConversionEngine gstreamer = new GstreamerEngine();
+    ConversionEngine winamp = new WinampEngineAdapter(new LegacyWinamp());
+
+    Map<String, ConversionEngine> map = new HashMap<>();
+    for (String ext : props.stringPropertyNames()) {
+      map.put(ext, switch (props.getProperty(ext)) {
+        case "ffmpeg" -> ffmpeg;
+        case "gstreamer" -> gstreamer;
+        default -> winamp;
+      });
+    }
+    return map;
+  }
+
+  private static ConversionEngine selectEngine(String filename) {
+    String ext = filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
+    return ENGINE_MAP.getOrDefault(ext, new WinampEngineAdapter(new LegacyWinamp()));
   }
 
   private static MediaTask selectTask(String filename, ConversionEngine engine) {
