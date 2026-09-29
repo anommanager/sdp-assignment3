@@ -12,7 +12,7 @@ import com.mediaconverter.task.VideoTask;
 
 public class App {
   public static void main(String[] args) {
-    String files[] = { "voice.mp3", "film.avi", "podcast.wmi" };
+    String files[] = { "voice.mp3", "film.avi", "podcast.wma" };
 
     for (String file : files) {
       ConversionEngine engine = selectEngine(file);
@@ -27,7 +27,7 @@ public class App {
   }
 
   private static ConversionEngine selectEngine(String filename) {
-    String format = filename.substring(filename.lastIndexOf(".")).toLowerCase();
+    String format = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
 
     return switch (format) {
       case "mp3", "wav", "flac" -> new FfmpegEngine();
