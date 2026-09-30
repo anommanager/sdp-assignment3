@@ -13,6 +13,13 @@ public class WinampEngineAdapter implements ConversionEngine {
 
   @Override
   public void convert(String inputFile, String outputFormat) throws MediaProcessingException {
+    if (inputFile == null || inputFile.isBlank()) {
+      throw new MediaProcessingException("Winamp: input file not found", inputFile, outputFormat);
+    }
+    if (outputFormat == null || outputFormat.isBlank()) {
+      throw new MediaProcessingException("Winamp: output format not supported", inputFile, outputFormat);
+    }
+
     String inputFormat = extractFormat(inputFile);
     String outputFile = toOutputFilename(inputFile, outputFormat);
 

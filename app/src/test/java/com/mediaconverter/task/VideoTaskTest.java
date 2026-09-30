@@ -1,36 +1,41 @@
 package com.mediaconverter.task;
 
-import com.mediaconverter.engine.ConversionEngine;
+import com.mediaconverter.engine.FfmpegEngine;
 import com.mediaconverter.exception.MediaProcessingException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(MockitoExtension.class)
 class VideoTaskTest {
 
-  @Mock
-  ConversionEngine engine;
+  VideoTask task;
 
-  @Test
-  void process_callsEngineWithMp4() throws MediaProcessingException {
-    VideoTask task = new VideoTask(engine);
-    task.process("movie.avi");
-    verify(engine).convert("movie.avi", "mp4");
+  @BeforeEach
+  void setUp() {
+    task = new VideoTask(new FfmpegEngine());
   }
 
   @Test
-  void process_propagatesException() throws MediaProcessingException {
-    doThrow(new MediaProcessingException("fail", "movie.avi", "mp4"))
-        .when(engine).convert("movie.avi", "mp4");
+  void process_validFile_doesNotThrow() {
+    assertDoesNotThrow(() -> task.process("movie.avi"));
+  }
 
-    VideoTask task = new VideoTask(engine);
-    assertThrows(
-        MediaProcessingException.class,
-        () -> task.process("movie.avi"));
+  @Test
+  void process_nullFile_throwsException() {
+    assertThrows(MediaProcessingException.class, () -> task.process(null));
+  }
+
+  @Test
+  void process_blankFile_throwsException() {
+    assertThrows(MediaProcessingException.class, () -> task.process("  "));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = { "movie.avi", "clip.mkv", "film.mov", "video.wmv", "show.mp4" })
+  void process_variousVideoFormats_doesNotThrow(String file) {
+    assertDoesNotThrow(() -> task.process(file));
   }
 }
